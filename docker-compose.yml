@@ -7,18 +7,25 @@
 # SQLite-файл живёт в volume `db-data` (/data/prod.db) и переживает пересборку.
 
 services:
-  # Одноразовый сервис: создаёт схему в БД и заливает seed при первом запуске.
+  # Одноразовый сервис: создаёт схему в БД. Seed (демо-данные) заливается
+  # ТОЛЬКО если нет ключа API — иначе фейковые seed-матчи (в т.ч. «живой»)
+  # перебивают реальные данные, приходящие из синка.
   migrate:
     build:
       context: .
       target: builder
     environment:
       DATABASE_URL: "file:/data/prod.db"
+      FOOTBALL_DATA_API_KEY: "${FOOTBALL_DATA_API_KEY:-}"
     volumes:
       - db-data:/data
     command: >
       sh -c "npx prisma db push --skip-generate &&
-             ([ -f /data/.seeded ] || (npx tsx prisma/seed.ts && touch /data/.seeded))"
+             if [ -n \"$$FOOTBALL_DATA_API_KEY\" ]; then
+               echo '[migrate] ключ API есть — seed пропущен, данные придут из синка';
+             else
+               [ -f /data/.seeded ] || (npx tsx prisma/seed.ts && touch /data/.seeded);
+             fi"
     restart: "no"
 
   # Само приложение (Next standalone).
@@ -50,9 +57,12 @@ services:
     entrypoint: ["sh", "-c"]
     command:
       - |
+        echo "[sync] sidecar started"
         while true; do
-          sleep 180
-          curl -fsS -H "Authorization: Bearer $${CRON_SECRET}" http://app:3000/api/sync || true
+          code=$$(curl -s -o /tmp/resp -w '%{http_code}' -H "Authorization: Bearer $${CRON_SECRET}" http://app:3000/api/sync)
+          echo "[sync $$(date -u +%H:%M:%SZ)] HTTP $$code $$(cat /tmp/resp 2>/dev/null)"
+          # успех → ждём 3 мин; иначе (app ещё не поднялся / сбой) — повтор через 5 сек
+          if [ "$$code" = "200" ]; then sleep 180; else sleep 5; fi
         done
     restart: unless-stopped
 
