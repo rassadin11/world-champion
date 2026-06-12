@@ -1,26 +1,213 @@
 @import "tailwindcss";
 
+/* Палитра ЧМ-2026 «WE ARE 26»: монохром бренда (чёрный/белый) + золото кубка,
+   цвета стран-хозяек: Канада — красный, США — синий, Мексика — зелёный. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0b0b10; /* графитовый монохром бренда */
+  --foreground: #f7f6f1; /* тёплый белый — сочетается с золотом */
+  --surface: #14141c; /* карточки */
+  --surface-2: #1e1e29;
+  --border: #2b2b3a;
+  --muted: #a0a0b4;
+  --pitch: #0fa35f; /* зелёный Мексики / газон */
+  --accent: #e7b54a; /* золото кубка */
+  --live: #ef3340; /* красный Канады / live */
+  --host-blue: #4079e0; /* синий США */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-pitch: var(--pitch);
+  --color-accent: var(--accent);
+  --color-live: var(--live);
+  --color-host-blue: var(--host-blue);
+  --font-sans: var(--font-app-sans);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Лента трёх стран-хозяек: Канада → США → Мексика (с севера на юг). */
+.host-stripe {
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--live) 0 33.34%,
+    var(--host-blue) 33.34% 66.67%,
+    var(--pitch) 66.67% 100%
+  );
+}
+
+/* Глобально крупнее: масштабируем корневой размер — растут все rem-размеры. */
+html {
+  font-size: 17px;
+}
+@media (min-width: 768px) {
+  html {
+    font-size: 18px;
+  }
+}
+@media (min-width: 1280px) {
+  html {
+    font-size: 19px;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-app-sans), system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Гигантский счёт live-матча — крупно, но укладывается в 100vh главной. */
+.score-mega {
+  font-variant-numeric: tabular-nums;
+  font-weight: 900;
+  line-height: 0.8;
+  letter-spacing: -0.05em;
+  font-size: clamp(4rem, 20vw, 16rem);
+}
+
+/* Читаемость текста поверх флагов. */
+.hero-shadow {
+  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.65), 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* ---- Кастомный скроллбар ---- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-2) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--surface-2);
+  border-radius: 9999px;
+  border: 2px solid var(--background);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ---- Переходы между страницами (View Transitions) ---- */
+:root {
+  --vt-exit: 150ms;
+  --vt-enter: 210ms;
+}
+
+@keyframes vt-fade {
+  from {
+    opacity: 0;
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+@keyframes vt-slide-x {
+  from {
+    translate: var(--vt-offset, 0);
+  }
+  to {
+    translate: 0;
+  }
+}
+
+/* Вперёд (список → матч): контент уезжает влево, новый въезжает справа */
+::view-transition-old(.nav-forward) {
+  --vt-offset: -60px;
+  animation:
+    var(--vt-exit) ease-in both vt-fade reverse,
+    400ms ease-in-out both vt-slide-x reverse;
+}
+::view-transition-new(.nav-forward) {
+  --vt-offset: 60px;
+  animation:
+    var(--vt-enter) ease-out var(--vt-exit) both vt-fade,
+    400ms ease-in-out both vt-slide-x;
+}
+
+/* Назад (матч → список): зеркально */
+::view-transition-old(.nav-back) {
+  --vt-offset: 60px;
+  animation:
+    var(--vt-exit) ease-in both vt-fade reverse,
+    400ms ease-in-out both vt-slide-x reverse;
+}
+::view-transition-new(.nav-back) {
+  --vt-offset: -60px;
+  animation:
+    var(--vt-enter) ease-out var(--vt-exit) both vt-fade,
+    400ms ease-in-out both vt-slide-x;
+}
+
+/* Табы навигации (сейчас/сегодня/завтра/таблица): мягкий кроссфейд */
+::view-transition-old(.nav-tab) {
+  animation: var(--vt-exit) ease-out both vt-fade reverse;
+}
+::view-transition-new(.nav-tab) {
+  animation: var(--vt-enter) ease-in var(--vt-exit) both vt-fade;
+}
+
+/* Морф общих элементов (флаги, счёт): лёгкий блюр прячет интерполяцию */
+::view-transition-group(.morph) {
+  animation-duration: 400ms;
+}
+::view-transition-image-pair(.morph) {
+  animation-name: vt-morph-blur;
+}
+@keyframes vt-morph-blur {
+  30% {
+    filter: blur(3px);
+  }
+}
+
+/* Панели навигации не двигаются — пространственный якорь */
+::view-transition-group(site-header),
+::view-transition-group(site-tabbar) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(site-header),
+::view-transition-old(site-tabbar) {
+  display: none;
+}
+::view-transition-new(site-header),
+::view-transition-new(site-tabbar) {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
+
+@keyframes pulse-live {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.live-dot {
+  animation: pulse-live 1.2s ease-in-out infinite;
 }

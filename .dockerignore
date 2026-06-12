@@ -1,0 +1,21 @@
+# Зависимости и сборка — ставятся/генерятся внутри образа
+node_modules
+.next
+out
+build
+
+# Локальная БД и секреты — НЕ должны попасть в образ
+.env
+.env.*
+*.db
+prisma/dev.db
+prisma/*.db
+
+# Git и прочее
+.git
+.gitignore
+.vercel
+.claude
+*.md
+npm-debug.log*
+.DS_Store

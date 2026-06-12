@@ -1,0 +1,58 @@
+// Prisma schema — модель данных ЧМ-2026.
+// Локально: SQLite. На Vercel: меняем provider на postgresql + DATABASE_URL, код не трогаем.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Team {
+  id          Int        @id // id из football-data.org
+  name        String // англ. название
+  nameRu      String? // рус. название (из словаря teams-ru)
+  crest       String? // URL флага/эмблемы
+  homeMatches Match[]    @relation("home")
+  awayMatches Match[]    @relation("away")
+  standings   Standing[]
+}
+
+model Match {
+  id         Int      @id // id из football-data.org
+  utcDate    DateTime
+  status     String // SCHEDULED | TIMED | IN_PLAY | PAUSED | FINISHED | ...
+  minute     Int? // не всегда приходит на free
+  stage      String // GROUP_STAGE | LAST_16 | QUARTER_FINALS | SEMI_FINALS | FINAL | ...
+  group      String? // GROUP_A.. | null для плей-офф
+  homeTeam   Team     @relation("home", fields: [homeTeamId], references: [id])
+  homeTeamId Int
+  awayTeam   Team     @relation("away", fields: [awayTeamId], references: [id])
+  awayTeamId Int
+  homeScore  Int? // счёт основного времени, дом
+  awayScore  Int? // счёт основного времени, гости
+  updatedAt  DateTime @updatedAt
+
+  @@index([utcDate])
+  @@index([status])
+}
+
+model Standing {
+  id             Int    @id @default(autoincrement())
+  group          String // GROUP_A ..
+  position       Int
+  team           Team   @relation(fields: [teamId], references: [id])
+  teamId         Int
+  playedGames    Int
+  won            Int
+  draw           Int
+  lost           Int
+  goalsFor       Int
+  goalsAgainst   Int
+  goalDifference Int
+  points         Int
+
+  @@unique([group, teamId])
+}

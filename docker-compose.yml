@@ -1,0 +1,60 @@
+# Деплой на VPS. Запуск:  docker compose up -d --build
+#
+# Перед первым запуском создайте рядом файл .env со значениями:
+#   FOOTBALL_DATA_API_KEY=ваш_ключ   (необязательно — без него работают seed-данные)
+#   CRON_SECRET=любая_случайная_строка
+#
+# SQLite-файл живёт в volume `db-data` (/data/prod.db) и переживает пересборку.
+
+services:
+  # Одноразовый сервис: создаёт схему в БД и заливает seed при первом запуске.
+  migrate:
+    build:
+      context: .
+      target: builder
+    environment:
+      DATABASE_URL: "file:/data/prod.db"
+    volumes:
+      - db-data:/data
+    command: >
+      sh -c "npx prisma db push --skip-generate &&
+             ([ -f /data/.seeded ] || (npx tsx prisma/seed.ts && touch /data/.seeded))"
+    restart: "no"
+
+  # Само приложение (Next standalone).
+  app:
+    build:
+      context: .
+      target: runner
+    environment:
+      DATABASE_URL: "file:/data/prod.db"
+      FOOTBALL_DATA_API_KEY: "${FOOTBALL_DATA_API_KEY:-}"
+      CRON_SECRET: "${CRON_SECRET:-}"
+    volumes:
+      - db-data:/data
+    ports:
+      - "3000:3000" # HTTP наружу; reverse-proxy/TLS добавим позже
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # Cron-sidecar: дёргает /api/sync каждые 3 минуты (замена Vercel Cron).
+  sync:
+    image: curlimages/curl:latest
+    depends_on:
+      app:
+        condition: service_started
+    environment:
+      CRON_SECRET: "${CRON_SECRET:-}"
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        while true; do
+          sleep 180
+          curl -fsS -H "Authorization: Bearer $${CRON_SECRET}" http://app:3000/api/sync || true
+        done
+    restart: unless-stopped
+
+volumes:
+  db-data:
