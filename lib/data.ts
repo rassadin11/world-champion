@@ -71,6 +71,26 @@ export async function getMatchesByDate(input: string | null): Promise<MatchesRes
   return { date: utcDateKey(start), matches: matches.map(toMatchDTO) };
 }
 
+/** Предстоящие матчи (не завершённые): запланированные + идущие сейчас, по времени вперёд. */
+export async function getUpcomingMatches(): Promise<MatchDTO[]> {
+  const matches = await prisma.match.findMany({
+    where: { status: { not: "FINISHED" } },
+    orderBy: { utcDate: "asc" },
+    include: matchInclude,
+  });
+  return matches.map(toMatchDTO);
+}
+
+/** Завершённые матчи, от свежих к старым. */
+export async function getFinishedMatches(): Promise<MatchDTO[]> {
+  const matches = await prisma.match.findMany({
+    where: { status: "FINISHED" },
+    orderBy: { utcDate: "desc" },
+    include: matchInclude,
+  });
+  return matches.map(toMatchDTO);
+}
+
 /** Один матч по id (из нашей БД), нормализованный. */
 export async function getMatchById(id: number): Promise<MatchDTO | null> {
   if (!Number.isFinite(id)) return null;

@@ -162,7 +162,7 @@ export default async function MatchPage({
 
       <div className="relative z-10 mx-auto w-full max-w-3xl px-4 pt-6 pb-24 sm:pt-10 md:pb-10">
         <Link
-          href="/today"
+          href="/upcoming"
           transitionTypes={["nav-back"]}
           className="mb-6 inline-flex items-center gap-1 text-sm font-semibold text-muted transition-colors hover:text-foreground"
         >

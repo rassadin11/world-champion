@@ -45,10 +45,11 @@ lib/
   teams-ru.ts              # маппинг англ. → рус. названия сборных
 components/
   LiveMatch.tsx            # карточка live + фон с флагами
-  MatchList.tsx            # список матчей дня
+  MatchList.tsx            # список матчей (карточка MatchCard)
+  MatchSchedule.tsx        # матчи, сгруппированные по дням
   GroupTable.tsx           # таблица группы
   PlayoffBracket.tsx       # сетка плей-офф
-  NavMenu.tsx              # меню (Сегодня / Завтра / Таблица)
+  NavMenu.tsx              # меню (Предстоящие / Завершённые / Таблица)
 prisma/
   schema.prisma
 ```

@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation";
 
 const ITEMS = [
   { href: "/", label: "Сейчас", icon: "⚽" },
-  { href: "/today", label: "Сегодня", icon: "📅" },
-  { href: "/tomorrow", label: "Завтра", icon: "⏭️" },
+  { href: "/upcoming", label: "Предстоящие", icon: "📅" },
+  { href: "/finished", label: "Завершённые", icon: "✅" },
   { href: "/table", label: "Таблица", icon: "🏆" },
 ] as const;
 

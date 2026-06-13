@@ -62,6 +62,65 @@ function Center({ match }: { match: MatchDTO }) {
   );
 }
 
+// Одна карточка матча (li > Link). Переиспользуется в MatchList и MatchSchedule.
+export function MatchCard({ match }: { match: MatchDTO }) {
+  return (
+    <li>
+      <Link
+        href={`/match/${match.id}`}
+        transitionTypes={["nav-forward"]}
+        className="block rounded-2xl border border-border bg-surface p-4 transition-colors hover:border-pitch/60 hover:bg-surface-2/40 sm:p-5"
+      >
+        <div className="flex items-center gap-3 sm:gap-4">
+          {/* Хозяева */}
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <ViewTransition
+              name={`team-${match.id}-home`}
+              share="morph"
+              default="none"
+            >
+              <TeamFlag team={match.home} />
+            </ViewTransition>
+            <span className="truncate text-base font-semibold text-foreground sm:text-lg">
+              {match.home.displayName}
+            </span>
+          </div>
+
+          {/* Центр: счёт или время */}
+          <div className="shrink-0 px-2 text-center sm:px-4">
+            <ViewTransition
+              name={`score-${match.id}`}
+              share="morph"
+              default="none"
+            >
+              <Center match={match} />
+            </ViewTransition>
+          </div>
+
+          {/* Гости */}
+          <div className="flex min-w-0 flex-1 items-center justify-end gap-3">
+            <span className="truncate text-right text-base font-semibold text-foreground sm:text-lg">
+              {match.away.displayName}
+            </span>
+            <ViewTransition
+              name={`team-${match.id}-away`}
+              share="morph"
+              default="none"
+            >
+              <TeamFlag team={match.away} />
+            </ViewTransition>
+          </div>
+        </div>
+
+        {/* Статус */}
+        <div className="mt-3 flex justify-center">
+          <StatusChip match={match} />
+        </div>
+      </Link>
+    </li>
+  );
+}
+
 export default function MatchList({ matches }: { matches: MatchDTO[] }) {
   if (matches.length === 0) {
     return (
@@ -74,59 +133,7 @@ export default function MatchList({ matches }: { matches: MatchDTO[] }) {
   return (
     <ul className="flex flex-col gap-3">
       {matches.map((match) => (
-        <li key={match.id}>
-          <Link
-            href={`/match/${match.id}`}
-            transitionTypes={["nav-forward"]}
-            className="block rounded-2xl border border-border bg-surface p-4 transition-colors hover:border-pitch/60 hover:bg-surface-2/40 sm:p-5"
-          >
-          <div className="flex items-center gap-3 sm:gap-4">
-            {/* Хозяева */}
-            <div className="flex min-w-0 flex-1 items-center gap-3">
-              <ViewTransition
-                name={`team-${match.id}-home`}
-                share="morph"
-                default="none"
-              >
-                <TeamFlag team={match.home} />
-              </ViewTransition>
-              <span className="truncate text-base font-semibold text-foreground sm:text-lg">
-                {match.home.displayName}
-              </span>
-            </div>
-
-            {/* Центр: счёт или время */}
-            <div className="shrink-0 px-2 text-center sm:px-4">
-              <ViewTransition
-                name={`score-${match.id}`}
-                share="morph"
-                default="none"
-              >
-                <Center match={match} />
-              </ViewTransition>
-            </div>
-
-            {/* Гости */}
-            <div className="flex min-w-0 flex-1 items-center justify-end gap-3">
-              <span className="truncate text-right text-base font-semibold text-foreground sm:text-lg">
-                {match.away.displayName}
-              </span>
-              <ViewTransition
-                name={`team-${match.id}-away`}
-                share="morph"
-                default="none"
-              >
-                <TeamFlag team={match.away} />
-              </ViewTransition>
-            </div>
-          </div>
-
-          {/* Статус */}
-          <div className="mt-3 flex justify-center">
-            <StatusChip match={match} />
-          </div>
-          </Link>
-        </li>
+        <MatchCard key={match.id} match={match} />
       ))}
     </ul>
   );
