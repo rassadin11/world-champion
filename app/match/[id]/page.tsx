@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import PageTransition from "@/components/PageTransition";
 import { getMatchById, getMatchExtra } from "@/lib/data";
 import { groupRu, stageRu } from "@/lib/stage";
+import { MATCH_TZ } from "@/lib/datetime";
 import type { MatchDTO, MatchDetailExtra } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -114,6 +115,7 @@ function ScoreBlock({ match }: { match: MatchDTO }) {
     month: "long",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: MATCH_TZ,
   });
   return <div className="text-3xl font-bold text-accent sm:text-4xl">{time}</div>;
 }
@@ -145,6 +147,7 @@ export default async function MatchPage({
     month: "long",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: MATCH_TZ,
   });
   const hasHalfTime =
     extra?.halfTimeHome != null && extra?.halfTimeAway != null;

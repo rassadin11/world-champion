@@ -2,6 +2,7 @@ import { ViewTransition } from "react";
 import Link from "next/link";
 import type { MatchDTO, TeamDTO } from "@/lib/types";
 import { groupRu, stageRu } from "@/lib/stage";
+import { MATCH_TZ } from "@/lib/datetime";
 
 // Список матчей за один день. Server-safe: без "use client", без хуков.
 
@@ -54,6 +55,7 @@ function Center({ match }: { match: MatchDTO }) {
   const time = new Date(match.utcDate).toLocaleTimeString("ru-RU", {
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: MATCH_TZ,
   });
   return (
     <span className="text-xl font-bold tabular-nums text-accent sm:text-2xl">

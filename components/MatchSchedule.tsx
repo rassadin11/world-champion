@@ -1,5 +1,5 @@
 import type { MatchDTO } from "@/lib/types";
-import { utcDateKey } from "@/lib/data";
+import { moscowDayKey } from "@/lib/datetime";
 import { MatchCard } from "./MatchList";
 
 // Список матчей за много дней, сгруппированный по дате с заголовком дня.
@@ -18,7 +18,7 @@ function dayLabel(key: string): string {
 function groupByDay(matches: MatchDTO[]): { key: string; matches: MatchDTO[] }[] {
   const groups: { key: string; matches: MatchDTO[] }[] = [];
   for (const match of matches) {
-    const key = utcDateKey(new Date(match.utcDate));
+    const key = moscowDayKey(match.utcDate);
     const last = groups[groups.length - 1];
     if (last && last.key === key) {
       last.matches.push(match);

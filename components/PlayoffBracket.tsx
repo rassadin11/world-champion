@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { MatchDTO, TeamDTO } from "@/lib/types";
 import { PLAYOFF_ORDER, stageRu } from "@/lib/stage";
+import { MATCH_TZ } from "@/lib/datetime";
 
 type Props = {
   matches: MatchDTO[];
@@ -10,6 +11,7 @@ function formatKickoff(iso: string): string {
   return new Date(iso).toLocaleDateString("ru-RU", {
     day: "2-digit",
     month: "2-digit",
+    timeZone: MATCH_TZ,
   });
 }
 

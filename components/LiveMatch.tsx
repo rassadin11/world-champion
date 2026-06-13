@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ViewTransition, useEffect, useState } from "react";
 import type { LiveResponse, MatchDTO } from "@/lib/types";
 import { groupRu, stageRu } from "@/lib/stage";
+import { MATCH_TZ } from "@/lib/datetime";
 
 type Props = { initial: LiveResponse };
 
@@ -111,10 +112,12 @@ export default function LiveMatch({ initial }: Props) {
   const kickoffTime = new Date(match.utcDate).toLocaleTimeString("ru-RU", {
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: MATCH_TZ,
   });
   const kickoffDate = new Date(match.utcDate).toLocaleDateString("ru-RU", {
     day: "2-digit",
     month: "long",
+    timeZone: MATCH_TZ,
   });
 
   return (
